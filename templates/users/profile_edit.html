@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit Profile - {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Profile</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Avatar Section -->
+                        <div class="text-center mb-4">
+                            {% if user.avatar %}
+                            <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="avatar mb-3">
+                            <div>
+                                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal"
+                                    data-bs-target="#deleteAvatarModal">
+                                    <i class="fas fa-trash me-1"></i>Delete Avatar
+                                </button>
+                            </div>
+                            {% else %}
+                            <div class="avatar mb-3 mx-auto"
+                                style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-user" style="font-size: 4rem; color: white;"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <h5 class="mb-3">Personal Information</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ profile_form.first_name|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ profile_form.last_name|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ profile_form.email|as_crispy_field }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ profile_form.bio|as_crispy_field }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ profile_form.date_of_birth|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ profile_form.phone_number|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            {{ profile_form.avatar|as_crispy_field }}
+                        </div>
+
+                        <hr>
+
+                        <h5 class="mb-3">Quiz Preferences</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ profile_form.preferred_difficulty|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ preferences_form.theme|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check">
+                                    {{ preferences_form.show_timer }}
+                                    <label class="form-check-label"
+                                        for="{{ preferences_form.show_timer.id_for_label }}">
+                                        Show Timer
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check">
+                                    {{ preferences_form.show_progress }}
+                                    <label class="form-check-label"
+                                        for="{{ preferences_form.show_progress.id_for_label }}">
+                                        Show Progress
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check">
+                                    {{ preferences_form.auto_submit }}
+                                    <label class="form-check-label"
+                                        for="{{ preferences_form.auto_submit.id_for_label }}">
+                                        Auto Submit
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ profile_form.email_notifications }}
+                                <label class="form-check-label"
+                                    for="{{ profile_form.email_notifications.id_for_label }}">
+                                    Email Notifications
+                                </label>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'users:profile' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Avatar Modal -->
+<div class="modal fade" id="deleteAvatarModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Avatar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete your avatar?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'users:delete_avatar' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

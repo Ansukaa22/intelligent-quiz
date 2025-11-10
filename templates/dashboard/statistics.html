@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Statistics{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4"><i class="fas fa-chart-bar me-2"></i>Detailed Statistics</h1>
+
+    <!-- Overall Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <div class="stat-number text-primary">{{ total_quizzes }}</div>
+                    <div class="stat-label">Total Quizzes</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <div class="stat-number text-success">{{ total_passed }}</div>
+                    <div class="stat-label">Passed</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <div class="stat-number text-danger">{{ total_failed }}</div>
+                    <div class="stat-label">Failed</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <div class="stat-number text-info">{{ average_score }}%</div>
+                    <div class="stat-label">Average Score</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Performance by Difficulty -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-signal me-2"></i>Performance by Difficulty</h4>
+                </div>
+                <div class="card-body">
+                    {% if difficulty_stats %}
+                    {% for stat in difficulty_stats %}
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="badge badge-{{ stat.quiz__difficulty }}">
+                                {{ stat.quiz__difficulty|upper }}
+                            </span>
+                            <span class="text-muted">{{ stat.avg_score|floatformat:1 }}% avg</span>
+                        </div>
+                        <div class="progress" style="height: 30px;">
+                            <div class="progress-bar" role="progressbar" style="width: {{ stat.avg_score }}%;">
+                                {{ stat.passed }}/{{ stat.total_attempts }} passed
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted text-center py-4">No data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance by Category -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-th-large me-2"></i>Performance by Category</h4>
+                </div>
+                <div class="card-body">
+                    {% if category_stats %}
+                    {% for stat in category_stats %}
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>{{ stat.quiz__category__name }}</strong>
+                            <span class="text-muted">{{ stat.avg_score|floatformat:1 }}% avg</span>
+                        </div>
+                        <div class="progress" style="height: 30px;">
+                            <div class="progress-bar bg-primary" role="progressbar"
+                                style="width: {{ stat.avg_score }}%;">
+                                {{ stat.passed }}/{{ stat.total_attempts }} passed
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted text-center py-4">No data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

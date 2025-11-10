@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Quiz History{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4"><i class="fas fa-history me-2"></i>Quiz History</h1>
+
+    {% if attempts %}
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Quiz Title</th>
+                            <th>Category</th>
+                            <th>Difficulty</th>
+                            <th>Score</th>
+                            <th>Percentage</th>
+                            <th>Time Taken</th>
+                            <th>Date</th>
+                            <th>Result</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attempt in attempts %}
+                        <tr>
+                            <td><strong>{{ attempt.quiz.title }}</strong></td>
+                            <td>{{ attempt.quiz.category.name }}</td>
+                            <td>
+                                <span class="badge badge-{{ attempt.quiz.difficulty }}">
+                                    {{ attempt.quiz.get_difficulty_display }}
+                                </span>
+                            </td>
+                            <td>{{ attempt.score }}/{{ attempt.total_questions }}</td>
+                            <td>{{ attempt.percentage|floatformat:1 }}%</td>
+                            <td>{{ attempt.time_taken|floatformat:0 }}s</td>
+                            <td>{{ attempt.completed_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                {% if attempt.passed %}
+                                <span class="badge bg-success"><i class="fas fa-check me-1"></i>Passed</span>
+                                {% else %}
+                                <span class="badge bg-danger"><i class="fas fa-times me-1"></i>Failed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card shadow">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-clipboard-list text-muted" style="font-size: 4rem;"></i>
+            <h3 class="mt-4">No Quiz History</h3>
+            <p class="text-muted">You haven't completed any quizzes yet.</p>
+            <a href="{% url 'quizzes:category_list' %}" class="btn btn-primary mt-3">
+                <i class="fas fa-play me-2"></i>Start Your First Quiz
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

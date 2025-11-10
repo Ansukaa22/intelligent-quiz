@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }} - Quizzes{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Category Header -->
+    <div class="text-center mb-5">
+        {% if category.icon %}
+        <div class="category-icon">
+            <i class="{{ category.icon }}"></i>
+        </div>
+        {% endif %}
+        <h1 class="fw-bold">{{ category.name }}</h1>
+        <p class="lead text-muted">{{ category.description }}</p>
+    </div>
+
+    <!-- Subcategories -->
+    {% if subcategories %}
+    <h3 class="mb-4"><i class="fas fa-list me-2"></i>Choose a Subcategory</h3>
+    <div class="row g-4">
+        {% for subcategory in subcategories %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100 hover-card">
+                <div class="card-body">
+                    <h4>{{ subcategory.name }}</h4>
+                    <p class="text-muted">{{ subcategory.description|default:"Test your knowledge in this topic" }}</p>
+                    <a href="{% url 'quizzes:subcategory_selection' category.slug %}"
+                        class="btn btn-primary w-100 mt-auto">
+                        <i class="fas fa-play me-2"></i>Start Quiz
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card shadow">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-info-circle text-muted" style="font-size: 3rem;"></i>
+            <h3 class="mt-4">Start a Quiz</h3>
+            <p class="text-muted">Configure your quiz with custom difficulty and number of questions.</p>
+            <a href="{% url 'quizzes:subcategory_selection' category.slug %}" class="btn btn-success btn-lg mt-3">
+                <i class="fas fa-play-circle me-2"></i>Configure & Start Quiz
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="text-center mt-5">
+        <a href="{% url 'quizzes:category_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to All Categories
+        </a>
+    </div>
+</div>
+{% endblock %}

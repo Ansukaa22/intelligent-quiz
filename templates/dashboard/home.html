@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Intelligent Quiz{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="fw-bold">
+                <i class="fas fa-chart-line me-2"></i>Dashboard
+            </h1>
+            <p class="lead text-muted">Welcome back, {{ user.first_name|default:user.username }}!</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="stat-number text-primary">{{ total_quizzes }}</div>
+                    <div class="stat-label">Quizzes Completed</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="stat-number text-success">{{ average_score }}%</div>
+                    <div class="stat-label">Average Score</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="stat-number text-info">{{ categories.count }}</div>
+                    <div class="stat-label">Available Categories</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Quiz Attempts -->
+        <div class="col-lg-7 mb-4">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-history me-2"></i>Recent Quiz Attempts</h4>
+                </div>
+                <div class="card-body">
+                    {% if recent_attempts %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Quiz</th>
+                                    <th>Score</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for attempt in recent_attempts %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ attempt.quiz.title }}</strong><br>
+                                        <small class="text-muted">{{ attempt.quiz.category.name }}</small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ attempt.score }}/{{ attempt.total_questions }}</strong><br>
+                                        <small class="text-muted">{{ attempt.percentage|floatformat:0 }}%</small>
+                                    </td>
+                                    <td>{{ attempt.completed_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if attempt.passed %}
+                                        <span class="badge bg-success">Passed</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Failed</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'dashboard:history' %}" class="btn btn-outline-primary">
+                            View All History <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-clipboard-list text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-3">No quiz attempts yet. Start your first quiz!</p>
+                        <a href="{% url 'quizzes:category_list' %}" class="btn btn-primary mt-2">
+                            <i class="fas fa-play me-2"></i>Browse Quizzes
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance by Category -->
+        <div class="col-lg-5 mb-4">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Performance by Category</h4>
+                </div>
+                <div class="card-body">
+                    {% if category_performance %}
+                    {% for perf in category_performance %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold">{{ perf.quiz__category__name }}</span>
+                            <span class="text-muted">{{ perf.avg_score|floatformat:0 }}%</span>
+                        </div>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar {% if perf.avg_score >= 70 %}bg-success{% elif perf.avg_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
+                                role="progressbar" style="width: {{ perf.avg_score }}%;">
+                                {{ perf.total_attempts }} attempts
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-bar text-muted" style="font-size: 2rem;"></i>
+                        <p class="text-muted mt-3 mb-0">No performance data yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card shadow mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'quizzes:category_list' %}" class="btn btn-primary">
+                            <i class="fas fa-play me-2"></i>Start New Quiz
+                        </a>
+                        <a href="{% url 'dashboard:statistics' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-chart-bar me-2"></i>View Statistics
+                        </a>
+                        <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-user me-2"></i>View Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

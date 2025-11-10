@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Welcome - Intelligent Quiz{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <h1 class="display-3 fw-bold">
+            <i class="fas fa-brain me-3"></i>Intelligent Quiz
+        </h1>
+        <p class="lead">Test your knowledge with AI-powered quizzes across multiple categories</p>
+        {% if user.is_authenticated %}
+        <div class="mt-4">
+            <a href="{% url 'dashboard:home' %}" class="btn btn-light btn-lg me-3">
+                <i class="fas fa-chart-line me-2"></i>Go to Dashboard
+            </a>
+            <a href="{% url 'quizzes:category_list' %}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-play me-2"></i>Start a Quiz
+            </a>
+        </div>
+        {% else %}
+        <div class="mt-4">
+            <a href="{% url 'users:register' %}" class="btn btn-light btn-lg me-3">
+                <i class="fas fa-user-plus me-2"></i>Get Started
+            </a>
+            <a href="{% url 'users:login' %}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-sign-in-alt me-2"></i>Login
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="fw-bold mb-3">Why Choose Intelligent Quiz?</h2>
+                <p class="text-muted">Enhance your learning with our advanced features</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="category-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h4>AI-Powered Questions</h4>
+                        <p class="text-muted">Questions generated dynamically using advanced AI technology for unique
+                            quiz experiences.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="category-icon">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <h4>Multiple Categories</h4>
+                        <p class="text-muted">From academics to entertainment, explore quizzes across diverse categories
+                            and topics.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="category-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4>Track Your Progress</h4>
+                        <p class="text-muted">Monitor your performance with detailed statistics and personalized
+                            insights.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="fw-bold mb-3">How It Works</h2>
+                <p class="text-muted">Get started in three simple steps</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="stat-number">1</div>
+                    <h4>Choose a Category</h4>
+                    <p class="text-muted">Select from our wide range of quiz categories and subcategories.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="stat-number">2</div>
+                    <h4>Take the Quiz</h4>
+                    <p class="text-muted">Answer AI-generated questions within the time limit.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="stat-number">3</div>
+                    <h4>View Results</h4>
+                    <p class="text-muted">Get instant feedback and track your improvement over time.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+{% if not user.is_authenticated %}
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h2 class="fw-bold mb-4">Ready to Test Your Knowledge?</h2>
+                <p class="lead mb-4">Join thousands of learners improving their skills every day</p>
+                <a href="{% url 'users:register' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-user-plus me-2"></i>Create Free Account
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

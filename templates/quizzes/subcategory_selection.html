@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} - Select Quiz Options{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'quizzes:category_list' %}">Categories</a></li>
+            <li class="breadcrumb-item active">{{ category.name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 mb-3">
+            <span class="me-2">{{ category.icon }}</span>
+            {{ category.name }}
+        </h1>
+        <p class="lead text-muted">{{ category.description }}</p>
+    </div>
+
+    <!-- Quiz Configuration Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h3 class="card-title mb-4">Configure Your Quiz</h3>
+
+                    <form method="post" id="quizConfigForm">
+                        {% csrf_token %}
+
+                        <!-- Subcategory Selection -->
+                        {% if subcategories %}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Select Topic (Optional)</label>
+                            <select class="form-select" name="subcategory" id="subcategorySelect">
+                                <option value="">All Topics</option>
+                                {% for subcategory in subcategories %}
+                                <option value="{{ subcategory.slug }}">{{ subcategory.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Choose a specific topic or leave blank for mixed questions</div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Difficulty Level -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Difficulty Level</label>
+                            <div class="row g-3">
+                                {% for diff in difficulties %}
+                                <div class="col-md-4">
+                                    <input type="radio" class="btn-check" name="difficulty" id="diff-{{ diff }}"
+                                        value="{{ diff }}" {% if diff == 'medium' %}checked{% endif %} required>
+                                    <label class="btn btn-outline-primary w-100" for="diff-{{ diff }}">
+                                        {% if diff == 'easy' %}
+                                        <i class="bi bi-emoji-smile"></i> Easy
+                                        {% elif diff == 'medium' %}
+                                        <i class="bi bi-emoji-neutral"></i> Medium
+                                        {% else %}
+                                        <i class="bi bi-emoji-dizzy"></i> Hard
+                                        {% endif %}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="form-text mt-2">
+                                <strong>Easy:</strong> Basic concepts &nbsp;|&nbsp;
+                                <strong>Medium:</strong> Moderate knowledge &nbsp;|&nbsp;
+                                <strong>Hard:</strong> Advanced topics
+                            </div>
+                        </div>
+
+                        <!-- Number of Questions -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Number of Questions</label>
+                            <div class="row g-3">
+                                {% for count in question_counts %}
+                                <div class="col-6 col-md-3">
+                                    <input type="radio" class="btn-check" name="num_questions" id="q-{{ count }}"
+                                        value="{{ count }}" {% if count == 10 %}checked{% endif %} required>
+                                    <label class="btn btn-outline-success w-100" for="q-{{ count }}">
+                                        {{ count }} Questions
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="form-text">More questions = better assessment of your knowledge</div>
+                        </div>
+
+                        <!-- Time Estimate -->
+                        <div class="alert alert-info mb-4" id="timeEstimate">
+                            <i class="bi bi-clock"></i> <strong>Estimated time:</strong> <span id="estimatedTime">7-8
+                                minutes</span>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg" id="startQuizBtn">
+                                <i class="bi bi-play-circle"></i> Start Quiz
+                            </button>
+                            <a href="{% url 'quizzes:category_list' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Categories
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Cards -->
+            <div class="row mt-4 g-3">
+                <div class="col-md-6">
+                    <div class="card border-primary">
+                        <div class="card-body">
+                            <h6 class="card-title"><i class="bi bi-lightbulb text-primary"></i> AI-Generated</h6>
+                            <p class="card-text small mb-0">Questions are dynamically generated using advanced AI for a
+                                unique experience every time.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-success">
+                        <div class="card-body">
+                            <h6 class="card-title"><i class="bi bi-trophy text-success"></i> Instant Results</h6>
+                            <p class="card-text small mb-0">Get immediate feedback with detailed explanations for each
+                                question.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Calculate and display estimated time
+    document.addEventListener('DOMContentLoaded', function () {
+        const difficultyInputs = document.querySelectorAll('input[name="difficulty"]');
+        const questionInputs = document.querySelectorAll('input[name="num_questions"]');
+        const estimatedTimeSpan = document.getElementById('estimatedTime');
+
+        function updateTimeEstimate() {
+            const difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+            const numQuestions = parseInt(document.querySelector('input[name="num_questions"]:checked').value);
+
+            const timePerQuestion = {
+                'easy': 30,
+                'medium': 45,
+                'hard': 60
+            };
+
+            const totalSeconds = numQuestions * timePerQuestion[difficulty];
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+
+            estimatedTimeSpan.textContent = `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+        }
+
+        difficultyInputs.forEach(input => input.addEventListener('change', updateTimeEstimate));
+        questionInputs.forEach(input => input.addEventListener('change', updateTimeEstimate));
+
+        updateTimeEstimate();
+
+        // Form submission
+        document.getElementById('quizConfigForm').addEventListener('submit', function (e) {
+            const btn = document.getElementById('startQuizBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating Quiz...';
+        });
+    });
+</script>
+{% endblock %}
