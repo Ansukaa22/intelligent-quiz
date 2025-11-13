@@ -1,0 +1,34 @@
+<!-- Loading Spinner Component -->
+<!-- Usage: Include this in any template and call showSpinner() / hideSpinner() -->
+<div id="loadingSpinner" class="spinner-overlay" style="display: none;">
+    <div class="spinner-container">
+        <div class="custom-spinner"></div>
+        <p class="mb-0 mt-2"><strong>Loading...</strong></p>
+        <small class="text-muted">Please wait</small>
+    </div>
+</div>
+
+<script>
+    function showSpinner(message = 'Loading...') {
+        const spinner = document.getElementById('loadingSpinner');
+        if (spinner) {
+            spinner.style.display = 'flex';
+            const messageElement = spinner.querySelector('p strong');
+            if (messageElement) {
+                messageElement.textContent = message;
+            }
+        }
+    }
+
+    function hideSpinner() {
+        const spinner = document.getElementById('loadingSpinner');
+        if (spinner) {
+            spinner.style.display = 'none';
+        }
+    }
+
+    // Auto-hide spinner on page load
+    window.addEventListener('load', function() {
+        hideSpinner();
+    });
+</script>

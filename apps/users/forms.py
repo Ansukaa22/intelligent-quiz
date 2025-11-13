@@ -98,7 +98,8 @@ class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'bio', 'date_of_birth', 
-                  'phone_number', 'avatar', 'preferred_difficulty', 'email_notifications']
+                  'phone_number', 'avatar', 'preferred_difficulty', 'email_notifications', 
+                  'show_on_leaderboard']
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -109,6 +110,13 @@ class UserProfileForm(forms.ModelForm):
             'avatar': forms.FileInput(attrs={'class': 'form-control'}),
             'preferred_difficulty': forms.Select(attrs={'class': 'form-select'}),
             'email_notifications': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'show_on_leaderboard': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+        labels = {
+            'show_on_leaderboard': 'Show my username on public leaderboards',
+        }
+        help_texts = {
+            'show_on_leaderboard': 'Enable this to compete with others and appear on the leaderboard',
         }
     
     def clean_email(self):
@@ -124,9 +132,8 @@ class UserPreferencesForm(forms.ModelForm):
     """
     class Meta:
         model = UserPreferences
-        fields = ['theme', 'show_timer', 'show_progress', 'auto_submit']
+        fields = ['show_timer', 'show_progress', 'auto_submit']
         widgets = {
-            'theme': forms.Select(attrs={'class': 'form-select'}),
             'show_timer': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'show_progress': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'auto_submit': forms.CheckboxInput(attrs={'class': 'form-check-input'}),

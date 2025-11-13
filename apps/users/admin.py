@@ -38,7 +38,7 @@ class UserPreferencesAdmin(admin.ModelAdmin):
     """
     Admin interface for UserPreferences model
     """
-    list_display = ['user', 'theme', 'show_timer', 'show_progress', 'auto_submit']
-    list_filter = ['theme', 'show_timer', 'show_progress', 'auto_submit']
+    list_display = ['user', 'show_timer', 'show_progress', 'auto_submit']
+    list_filter = ['show_timer', 'show_progress', 'auto_submit']
     search_fields = ['user__username', 'user__email']
     ordering = ['-created_at']

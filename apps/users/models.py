@@ -36,6 +36,12 @@ class User(AbstractUser):
     )
     email_notifications = models.BooleanField(default=True)
     
+    # Leaderboard settings
+    show_on_leaderboard = models.BooleanField(
+        default=False, 
+        help_text='Allow your username to appear on the public leaderboard'
+    )
+    
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -77,14 +83,6 @@ class UserPreferences(models.Model):
     Additional user preferences and settings
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='preferences')
-    theme = models.CharField(
-        max_length=10,
-        choices=[
-            ('light', 'Light'),
-            ('dark', 'Dark'),
-        ],
-        default='light'
-    )
     show_timer = models.BooleanField(default=True, help_text='Display timer during quiz')
     show_progress = models.BooleanField(default=True, help_text='Display progress bar during quiz')
     auto_submit = models.BooleanField(default=True, help_text='Auto-submit when time expires')

@@ -20,7 +20,7 @@ class Category(models.Model):
     description = models.TextField(blank=True)
     icon = models.CharField(max_length=50, blank=True, help_text='Font Awesome icon class or emoji')
     image = models.ImageField(upload_to='categories/', null=True, blank=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, db_index=True)
     order = models.IntegerField(default=0, help_text='Display order')
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -35,6 +35,10 @@ class Category(models.Model):
         ordering = ['order', 'name']
         verbose_name = 'Category'
         verbose_name_plural = 'Categories'
+        indexes = [
+            models.Index(fields=['is_active', 'order']),
+            models.Index(fields=['slug']),
+        ]
     
     def __str__(self):
         return self.name
@@ -53,7 +57,7 @@ class Subcategory(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100)
     description = models.TextField(blank=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, db_index=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -63,6 +67,9 @@ class Subcategory(models.Model):
         verbose_name = 'Subcategory'
         verbose_name_plural = 'Subcategories'
         unique_together = ['category', 'slug']
+        indexes = [
+            models.Index(fields=['category', 'is_active']),
+        ]
     
     def __str__(self):
         return f"{self.category.name} - {self.name}"
@@ -172,19 +179,25 @@ class UserQuizAttempt(models.Model):
     
     score = models.IntegerField(default=0)
     total_questions = models.IntegerField(default=0)
-    percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0, db_index=True)
     
     time_taken = models.IntegerField(default=0, help_text='Time taken in seconds')
-    completed = models.BooleanField(default=False)
-    passed = models.BooleanField(default=False)
+    completed = models.BooleanField(default=False, db_index=True)
+    passed = models.BooleanField(default=False, db_index=True)
     
-    started_at = models.DateTimeField(auto_now_add=True)
-    completed_at = models.DateTimeField(null=True, blank=True)
+    started_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    completed_at = models.DateTimeField(null=True, blank=True, db_index=True)
     
     class Meta:
         ordering = ['-started_at']
         verbose_name = 'Quiz Attempt'
         verbose_name_plural = 'Quiz Attempts'
+        indexes = [
+            models.Index(fields=['user', 'completed']),
+            models.Index(fields=['user', 'completed_at']),
+            models.Index(fields=['user', 'passed']),
+            models.Index(fields=['-percentage']),
+        ]
     
     def __str__(self):
         return f"{self.user.username} - {self.quiz.title} ({self.score}/{self.total_questions})"
@@ -227,7 +240,7 @@ class UserAnswer(models.Model):
         ('C', 'Option C'),
         ('D', 'Option D'),
     ])
-    is_correct = models.BooleanField(default=False)
+    is_correct = models.BooleanField(default=False, db_index=True)
     ai_explanation = models.TextField(blank=True, null=True, help_text='AI-generated explanation for incorrect answer')
     
     answered_at = models.DateTimeField(auto_now_add=True)
@@ -237,6 +250,9 @@ class UserAnswer(models.Model):
         verbose_name = 'User Answer'
         verbose_name_plural = 'User Answers'
         unique_together = ['attempt', 'question']
+        indexes = [
+            models.Index(fields=['attempt', 'is_correct']),
+        ]
     
     def __str__(self):
         return f"{self.attempt.user.username} - Q{self.question.order}: {self.selected_answer}"

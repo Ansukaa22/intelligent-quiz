@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Error - Intelligent Quiz</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 1rem;
+        }
+
+        .error-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 3rem;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .error-code {
+            font-size: 6rem;
+            font-weight: 900;
+            color: #ef4444;
+            line-height: 1;
+            margin-bottom: 1rem;
+        }
+
+        .error-illustration {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            animation: shake 2s ease-in-out infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% {
+                transform: rotate(0deg);
+            }
+            25% {
+                transform: rotate(-10deg);
+            }
+            75% {
+                transform: rotate(10deg);
+            }
+        }
+
+        .error-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+
+        .error-description {
+            font-size: 1.1rem;
+            color: #6b7280;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 10px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+            border: none;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-2px);
+        }
+
+        .error-info {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .error-info h6 {
+            color: #92400e;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .error-info p {
+            color: #78350f;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-illustration">⚠️</div>
+        <div class="error-code">500</div>
+        <h1 class="error-title">Internal Server Error</h1>
+        <p class="error-description">
+            Something went wrong on our end. We're working to fix it! 
+            Please try again in a few moments.
+        </p>
+        
+        <div class="error-info">
+            <h6><i class="fas fa-info-circle me-2"></i>What happened?</h6>
+            <p>
+                Our server encountered an unexpected error while processing your request.
+                Our team has been notified and is working on a solution.
+            </p>
+        </div>
+        
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary">
+                <i class="fas fa-home me-2"></i>Go Home
+            </a>
+            <a href="javascript:window.location.reload()" class="btn btn-secondary">
+                <i class="fas fa-refresh me-2"></i>Try Again
+            </a>
+        </div>
+        
+        <div class="mt-4">
+            <p style="color: #6b7280; font-size: 0.9rem;">
+                <i class="fas fa-clock me-1"></i>
+                Error occurred at: <strong id="error-time"></strong>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Display current time
+        document.getElementById('error-time').textContent = new Date().toLocaleString();
+    </script>
+</body>
+</html>

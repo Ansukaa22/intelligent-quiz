@@ -72,9 +72,6 @@
                             <div class="col-md-6 mb-3">
                                 {{ profile_form.preferred_difficulty|as_crispy_field }}
                             </div>
-                            <div class="col-md-6 mb-3">
-                                {{ preferences_form.theme|as_crispy_field }}
-                            </div>
                         </div>
 
                         <div class="row">
@@ -114,6 +111,23 @@
                                     for="{{ profile_form.email_notifications.id_for_label }}">
                                     Email Notifications
                                 </label>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <h5 class="mb-3">Privacy & Competition</h5>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ profile_form.show_on_leaderboard }}
+                                <label class="form-check-label"
+                                    for="{{ profile_form.show_on_leaderboard.id_for_label }}">
+                                    <strong>Show on Leaderboard</strong>
+                                </label>
+                                <small class="d-block text-muted mt-1">
+                                    <i class="fas fa-trophy me-1"></i>
+                                    Enable this to compete with others and appear on public leaderboards
+                                </small>
                             </div>
                         </div>
 

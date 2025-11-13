@@ -75,6 +75,9 @@
                             <li><a class="dropdown-item" href="{% url 'dashboard:statistics' %}">
                                     <i class="fas fa-chart-bar me-2"></i>Statistics
                                 </a></li>
+                            <li><a class="dropdown-item" href="{% url 'dashboard:leaderboard' %}">
+                                    <i class="fas fa-trophy me-2"></i>Leaderboard
+                                </a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
@@ -115,9 +118,12 @@
     {% endif %}
 
     <!-- Main Content -->
-    <main>
+    <main class="page-transition">
         {% block content %}{% endblock %}
     </main>
+
+    <!-- Loading Spinner Component -->
+    {% include 'components/spinner.html' %}
 
     <!-- Footer -->
     <footer class="footer">
