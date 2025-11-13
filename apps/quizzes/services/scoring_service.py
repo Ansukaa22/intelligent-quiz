@@ -63,25 +63,41 @@ class ScoringService:
         Returns:
             UserAnswer object
         """
-        try:
-            # Check if correct
-            is_correct = (selected_answer == question.correct_answer)
-            
-            # Create or update answer
-            answer, created = UserAnswer.objects.update_or_create(
-                attempt=attempt,
-                question=question,
-                defaults={
-                    'selected_answer': selected_answer,
-                    'is_correct': is_correct
-                }
-            )
-            
-            return answer
-            
-        except Exception as e:
-            logger.error(f"Error saving answer: {str(e)}")
-            raise
+        import time
+        from django.db import OperationalError
+        
+        # Retry logic for database locks (SQLite issue)
+        max_retries = 3
+        retry_delay = 0.1  # 100ms
+        
+        for attempt_num in range(max_retries):
+            try:
+                # Check if correct
+                is_correct = (selected_answer == question.correct_answer)
+                
+                # Create or update answer
+                answer, created = UserAnswer.objects.update_or_create(
+                    attempt=attempt,
+                    question=question,
+                    defaults={
+                        'selected_answer': selected_answer,
+                        'is_correct': is_correct
+                    }
+                )
+                
+                return answer
+                
+            except OperationalError as e:
+                if 'database is locked' in str(e) and attempt_num < max_retries - 1:
+                    logger.warning(f"Database locked, retrying... (attempt {attempt_num + 1}/{max_retries})")
+                    time.sleep(retry_delay * (attempt_num + 1))  # Exponential backoff
+                    continue
+                else:
+                    logger.error(f"Error saving answer after {attempt_num + 1} attempts: {str(e)}")
+                    raise
+            except Exception as e:
+                logger.error(f"Error saving answer: {str(e)}")
+                raise
     
     @staticmethod
     def get_quiz_results(attempt):
@@ -98,6 +114,7 @@ class ScoringService:
             for answer in answers:
                 question = answer.question
                 questions_data.append({
+                    'id': question.id,
                     'order': question.order,
                     'question_text': question.question_text,
                     'options': question.get_options(),
@@ -105,6 +122,7 @@ class ScoringService:
                     'correct_answer': question.correct_answer,
                     'is_correct': answer.is_correct,
                     'explanation': question.explanation,
+                    'user_answer_id': answer.id,  # Task 3.3: Added for AI explanation feature
                 })
             
             return {

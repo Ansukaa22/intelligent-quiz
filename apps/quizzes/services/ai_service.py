@@ -17,11 +17,18 @@ class AIQuestionGenerator:
     """
     
     def __init__(self):
-        """Initialize OpenAI client"""
-        self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        """Initialize settings (client will be lazy loaded)"""
+        self._client = None
         self.model = settings.OPENAI_MODEL
         self.max_tokens = settings.OPENAI_MAX_TOKENS
         self.temperature = settings.OPENAI_TEMPERATURE
+    
+    @property
+    def client(self):
+        """Lazy load OpenAI client to avoid import-time initialization issues"""
+        if self._client is None:
+            self._client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        return self._client
     
     def generate_questions(self, category, subcategory, difficulty, num_questions=10):
         """
@@ -182,6 +189,57 @@ Generate {num_questions} questions now:"""
             'estimated_tokens': estimated_tokens,
             'estimated_cost_usd': round(estimated_cost, 4)
         }
+    
+    def generate_answer_explanation(self, question_text, selected_answer, correct_answer, options):
+        """
+        Task 3.3: Generate AI explanation for why an answer was incorrect
+        
+        Args:
+            question_text (str): The question text
+            selected_answer (str): The answer the user selected (e.g., 'A')
+            correct_answer (str): The correct answer (e.g., 'C')
+            options (dict): Dictionary of options {'A': 'text', 'B': 'text', ...}
+        
+        Returns:
+            str: AI-generated explanation
+        """
+        prompt = f"""
+You are a helpful teacher explaining quiz answers to students. A student answered a question incorrectly.
+
+Question: {question_text}
+
+Options:
+{chr(10).join([f'{key}. {value}' for key, value in options.items()])}
+
+The student selected: {selected_answer}. {options.get(selected_answer, 'N/A')}
+The correct answer is: {correct_answer}. {options.get(correct_answer, 'N/A')}
+
+Please provide a clear, concise explanation (2-3 sentences) that:
+1. Explains why the correct answer is correct
+2. Explains why the student's answer was incorrect
+3. Helps the student understand the concept better
+
+Keep the explanation educational and encouraging.
+"""
+        
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are a helpful and encouraging teacher."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=250,
+                temperature=0.7
+            )
+            
+            explanation = response.choices[0].message.content.strip()
+            logger.info(f"Generated AI explanation for question")
+            return explanation
+            
+        except Exception as e:
+            logger.error(f"Error generating AI explanation: {str(e)}")
+            return "Unable to generate explanation at this time. Please try again later."
 
 
 # Singleton instance

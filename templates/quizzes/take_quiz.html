@@ -12,10 +12,23 @@
     }
 
     .question-nav-btn {
+        min-width: 40px;
         width: 40px;
         height: 40px;
         margin: 2px;
         border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        font-size: 14px;
+        line-height: 1;
+    }
+    
+    /* Adjust for two-digit numbers */
+    .question-nav-btn:nth-child(n+10) {
+        width: 45px;
+        min-width: 45px;
     }
 
     .question-nav-btn.answered {

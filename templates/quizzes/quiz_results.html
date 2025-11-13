@@ -193,6 +193,26 @@
                                 <p class="mb-0">{{ q.explanation }}</p>
                             </div>
                             {% endif %}
+
+                            <!-- Task 3.3: AI-Powered Explanation for Incorrect Answers -->
+                            {% if not q.is_correct %}
+                            <div class="mt-3">
+                                <button class="btn btn-outline-primary btn-sm ai-explain-btn" 
+                                        data-answer-id="{{ q.user_answer_id }}"
+                                        data-question-id="{{ q.id }}">
+                                    <i class="fas fa-robot me-1"></i> Get AI Explanation
+                                </button>
+                                <div class="ai-explanation-container mt-2" id="ai-explanation-{{ q.user_answer_id }}" style="display: none;">
+                                    <div class="alert alert-primary">
+                                        <h6><i class="fas fa-magic me-1"></i> AI Explanation:</h6>
+                                        <div class="ai-explanation-text"></div>
+                                    </div>
+                                </div>
+                                <div class="spinner-border spinner-border-sm text-primary ms-2" id="ai-spinner-{{ q.user_answer_id }}" style="display: none;" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -209,4 +229,152 @@
         </a>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Task 3.3: AI Explanation AJAX Handler with DOM Protection
+    document.addEventListener('DOMContentLoaded', function() {
+        // Content cache to store AI explanations
+        const explanationCache = new Map();
+        
+        // DOM protection system
+        const protectExplanationContainers = () => {
+            document.querySelectorAll('.ai-explanation-container').forEach(container => {
+                const answerId = container.id.replace('ai-explanation-', '');
+                const cachedContent = explanationCache.get(answerId);
+                
+                if (cachedContent && container.style.display === 'block') {
+                    // Restore content if container was cleared
+                    let explanationText = container.querySelector('.ai-explanation-text');
+                    if (!explanationText || !explanationText.textContent.trim()) {
+                        container.innerHTML = `
+                            <div class="alert alert-primary">
+                                <h6><i class="fas fa-magic me-1"></i> AI Explanation:</h6>
+                                <div class="ai-explanation-text">${cachedContent}</div>
+                            </div>
+                        `;
+                    }
+                }
+            });
+        };
+        
+        // Monitor DOM changes that might clear content
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList' || mutation.type === 'characterData') {
+                    // Check if any explanation containers were affected
+                    const affectedContainers = document.querySelectorAll('.ai-explanation-container[style*="display: block"]');
+                    affectedContainers.forEach(container => {
+                        const answerId = container.id.replace('ai-explanation-', '');
+                        const cachedContent = explanationCache.get(answerId);
+                        const explanationText = container.querySelector('.ai-explanation-text');
+                        
+                        if (cachedContent && (!explanationText || !explanationText.textContent.trim())) {
+                            // Content was cleared, restore it
+                            container.innerHTML = `
+                                <div class="alert alert-primary">
+                                    <h6><i class="fas fa-magic me-1"></i> AI Explanation:</h6>
+                                    <div class="ai-explanation-text">${cachedContent}</div>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+            });
+        });
+        
+        // Start observing the document for changes
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+        
+        // Periodic protection check (fallback for aggressive interference)
+        setInterval(protectExplanationContainers, 1000);
+        
+        // AI explanation button handlers
+        document.querySelectorAll('.ai-explain-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const answerId = this.dataset.answerId;
+                const container = document.getElementById(`ai-explanation-${answerId}`);
+                
+                if (!container) {
+                    alert('Error: Could not find explanation container. Please refresh the page.');
+                    return;
+                }
+                
+                // Check if explanation already loaded and visible
+                if (container.style.display === 'block') {
+                    const explanationText = container.querySelector('.ai-explanation-text');
+                    const hasContent = explanationText && explanationText.textContent.trim();
+                    if (hasContent) {
+                        container.style.display = 'none';
+                        this.innerHTML = '<i class="fas fa-robot me-1"></i> Get AI Explanation';
+                        return;
+                    }
+                }
+                
+                // Check cache first
+                const cachedExplanation = explanationCache.get(answerId);
+                if (cachedExplanation) {
+                    // Use cached content
+                    container.innerHTML = `
+                        <div class="alert alert-primary">
+                            <h6><i class="fas fa-magic me-1"></i> AI Explanation:</h6>
+                            <div class="ai-explanation-text">${cachedExplanation}</div>
+                        </div>
+                    `;
+                    container.style.display = 'block';
+                    this.innerHTML = '<i class="fas fa-robot me-1"></i> Hide AI Explanation';
+                    return;
+                }
+                
+                // Show loading state
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-robot me-1"></i> Generating...';
+                
+                // Make AJAX request
+                fetch(`/quizzes/ai-explanation/${answerId}/`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    this.disabled = false;
+                    
+                    if (data.success) {
+                        // Cache the explanation
+                        explanationCache.set(answerId, data.explanation);
+                        
+                        // Display the explanation
+                        container.innerHTML = `
+                            <div class="alert alert-primary">
+                                <h6><i class="fas fa-magic me-1"></i> AI Explanation:</h6>
+                                <div class="ai-explanation-text">${data.explanation}</div>
+                            </div>
+                        `;
+                        container.style.display = 'block';
+                        this.innerHTML = '<i class="fas fa-robot me-1"></i> Hide AI Explanation';
+                    } else {
+                        this.innerHTML = '<i class="fas fa-robot me-1"></i> Get AI Explanation';
+                        alert('Error: ' + (data.error || 'Failed to generate explanation'));
+                    }
+                })
+                .catch(error => {
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-robot me-1"></i> Get AI Explanation';
+                    alert('Error generating AI explanation. Please try again.');
+                });
+            });
+        });
+        
+        // Initial protection check
+        setTimeout(protectExplanationContainers, 500);
+    });
+</script>
 {% endblock %}

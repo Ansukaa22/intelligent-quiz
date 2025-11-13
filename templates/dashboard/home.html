@@ -15,9 +15,26 @@
         </div>
     </div>
 
+    <!-- Task 3.4: Continue Quiz Card -->
+    {% if incomplete_attempts %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info shadow-sm">
+                <h5 class="alert-heading"><i class="fas fa-play-circle me-2"></i>Continue Your Quiz</h5>
+                <p class="mb-3">You have unfinished quizzes. Pick up where you left off!</p>
+                {% for attempt in incomplete_attempts %}
+                <a href="{% url 'quizzes:take_quiz' attempt.id %}" class="btn btn-primary me-2 mb-2">
+                    <i class="fas fa-forward me-2"></i>Continue: {{ attempt.quiz.title }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Statistics Cards -->
     <div class="row g-4 mb-5">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
                     <div class="stat-number text-primary">{{ total_quizzes }}</div>
@@ -25,7 +42,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
                     <div class="stat-number text-success">{{ average_score }}%</div>
@@ -33,7 +50,16 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="stat-number text-warning">{{ total_time_hours }}h</div>
+                    <div class="stat-label">Total Time Spent</div>
+                    <small class="text-muted d-block mt-1">{{ total_time_minutes }} minutes</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
                     <div class="stat-number text-info">{{ categories.count }}</div>
@@ -156,5 +182,179 @@
             </div>
         </div>
     </div>
+
+    <!-- Task 3.2: Chart.js Analytics -->
+    {% if total_quizzes > 0 %}
+    <div class="row mt-5">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-pie-chart me-2"></i>Category Performance Distribution</h4>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryPieChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-line-chart me-2"></i>Score Progress Over Time</h4>
+                </div>
+                <div class="card-body">
+                    <canvas id="scoreLineChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Task 3.2: Recent Activity Feed -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h4>
+                </div>
+                <div class="card-body">
+                    {% if recent_activity %}
+                    <div class="list-group list-group-flush">
+                        {% for activity in recent_activity %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    {% if activity.passed %}
+                                    <i class="fas fa-check-circle text-success fa-2x"></i>
+                                    {% else %}
+                                    <i class="fas fa-times-circle text-danger fa-2x"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong>{{ activity.passed|yesno:"Completed,Attempted" }} {{ activity.quiz.title }}</strong>
+                                            <br>
+                                            <small class="text-muted">
+                                                {{ activity.quiz.category.name }} • 
+                                                Score: {{ activity.percentage|floatformat:0 }}% •
+                                                Time: {{ activity.time_taken|floatformat:0 }}s
+                                            </small>
+                                        </div>
+                                        <small class="text-muted">{{ activity.completed_at|timesince }} ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center mb-0">No recent activity</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
+{% if total_quizzes > 0 %}
+<script>
+    // Task 3.2: Category Performance Pie Chart
+    const categoryLabels = {{ category_chart_labels|safe }};
+    const categoryData = {{ category_chart_data|safe }};
+    
+    if (categoryLabels.length > 0) {
+        const ctxPie = document.getElementById('categoryPieChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'pie',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    label: 'Average Score (%)',
+                    data: categoryData,
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(255, 206, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)',
+                        'rgba(255, 159, 64, 0.8)'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed.toFixed(1) + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Task 3.2: Score Over Time Line Chart
+    const scoreLabels = {{ score_timeline_labels|safe }};
+    const scoreData = {{ score_timeline_data|safe }};
+    
+    if (scoreLabels.length > 0) {
+        const ctxLine = document.getElementById('scoreLineChart').getContext('2d');
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: scoreLabels,
+                datasets: [{
+                    label: 'Score Percentage',
+                    data: scoreData,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Score: ' + context.parsed.y.toFixed(1) + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endif %}
 {% endblock %}

@@ -260,3 +260,72 @@ def quiz_results_view(request, attempt_id):
         'incorrect_count': attempt.total_questions - attempt.score,
     }
     return render(request, 'quizzes/quiz_results.html', context)
+
+
+@login_required
+def ai_explanation_view(request, answer_id):
+    """
+    Task 3.3: Generate AI explanation for incorrect answer
+    AJAX endpoint that returns explanation for a user's answer
+    """
+    try:
+        # Get the user answer
+        answer = get_object_or_404(
+            UserAnswer.objects.select_related('question', 'attempt'),
+            id=answer_id,
+            attempt__user=request.user
+        )
+        
+        # Check if explanation already exists (cached)
+        if answer.ai_explanation:
+            return JsonResponse({
+                'success': True,
+                'explanation': answer.ai_explanation,
+                'cached': True
+            })
+        
+        # Generate new explanation
+        from django.conf import settings as django_settings
+        
+        # Check if API key is configured
+        if not django_settings.OPENAI_API_KEY:
+            return JsonResponse({
+                'success': False,
+                'error': 'OpenAI API key not configured. Please add OPENAI_API_KEY to your .env file.'
+            }, status=503)
+        
+        from .services.ai_service import ai_generator
+        
+        question = answer.question
+        options = question.get_options()
+        
+        explanation = ai_generator.generate_answer_explanation(
+            question_text=question.question_text,
+            selected_answer=answer.selected_answer,
+            correct_answer=question.correct_answer,
+            options=options
+        )
+        
+        # Cache the explanation
+        answer.ai_explanation = explanation
+        answer.save()
+        
+        return JsonResponse({
+            'success': True,
+            'explanation': explanation,
+            'cached': False
+        })
+        
+    except UserAnswer.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Answer not found'
+        }, status=404)
+    except Exception as e:
+        import traceback
+        logger.error(f"Error generating AI explanation: {str(e)}")
+        logger.error(traceback.format_exc())
+        return JsonResponse({
+            'success': False,
+            'error': f'Failed to generate explanation: {str(e)}'
+        }, status=500)

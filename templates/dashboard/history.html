@@ -6,6 +6,65 @@
 <div class="container py-5">
     <h1 class="mb-4"><i class="fas fa-history me-2"></i>Quiz History</h1>
 
+    <!-- Search and Filter Section -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="get" action="{% url 'dashboard:history' %}" class="row g-3">
+                <!-- Search Bar -->
+                <div class="col-md-12">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" name="search" placeholder="Search by quiz title or category..." value="{{ search_query }}">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                        {% if search_query or category_filter or difficulty_filter or result_filter %}
+                        <a href="{% url 'dashboard:history' %}" class="btn btn-outline-secondary">Clear Filters</a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Filters -->
+                <div class="col-md-3">
+                    <select name="category" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.slug }}" {% if category_filter == category.slug %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <select name="difficulty" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Difficulties</option>
+                        <option value="easy" {% if difficulty_filter == 'easy' %}selected{% endif %}>Easy</option>
+                        <option value="medium" {% if difficulty_filter == 'medium' %}selected{% endif %}>Medium</option>
+                        <option value="hard" {% if difficulty_filter == 'hard' %}selected{% endif %}>Hard</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <select name="result" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Results</option>
+                        <option value="passed" {% if result_filter == 'passed' %}selected{% endif %}>Passed</option>
+                        <option value="failed" {% if result_filter == 'failed' %}selected{% endif %}>Failed</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <select name="sort" class="form-select" onchange="this.form.submit()">
+                        <option value="-completed_at" {% if sort_by == '-completed_at' %}selected{% endif %}>Latest First</option>
+                        <option value="completed_at" {% if sort_by == 'completed_at' %}selected{% endif %}>Oldest First</option>
+                        <option value="-percentage" {% if sort_by == '-percentage' %}selected{% endif %}>Highest Score</option>
+                        <option value="percentage" {% if sort_by == 'percentage' %}selected{% endif %}>Lowest Score</option>
+                        <option value="-time_taken" {% if sort_by == '-time_taken' %}selected{% endif %}>Longest Time</option>
+                        <option value="time_taken" {% if sort_by == 'time_taken' %}selected{% endif %}>Shortest Time</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
     {% if attempts %}
     <div class="card shadow">
         <div class="card-body">
@@ -21,6 +80,7 @@
                             <th>Time Taken</th>
                             <th>Date</th>
                             <th>Result</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -43,6 +103,11 @@
                                 {% else %}
                                 <span class="badge bg-danger"><i class="fas fa-times me-1"></i>Failed</span>
                                 {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'quizzes:quiz_results' attempt.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>View Results
+                                </a>
                             </td>
                         </tr>
                         {% endfor %}

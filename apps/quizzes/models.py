@@ -217,6 +217,7 @@ class UserQuizAttempt(models.Model):
 class UserAnswer(models.Model):
     """
     Store user answers for each question
+    Task 3.3: Added ai_explanation field for caching AI-generated explanations
     """
     attempt = models.ForeignKey(UserQuizAttempt, on_delete=models.CASCADE, related_name='answers')
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='user_answers')
@@ -227,6 +228,7 @@ class UserAnswer(models.Model):
         ('D', 'Option D'),
     ])
     is_correct = models.BooleanField(default=False)
+    ai_explanation = models.TextField(blank=True, null=True, help_text='AI-generated explanation for incorrect answer')
     
     answered_at = models.DateTimeField(auto_now_add=True)
     

@@ -21,4 +21,5 @@ urlpatterns = [
     
     # AJAX endpoints
     path('save-answer/', views.save_answer_view, name='save_answer'),
+    path('ai-explanation/<int:answer_id>/', views.ai_explanation_view, name='ai_explanation'),  # Task 3.3
 ]

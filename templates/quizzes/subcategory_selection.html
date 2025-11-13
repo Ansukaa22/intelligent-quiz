@@ -3,6 +3,15 @@
 
 {% block title %}{{ category.name }} - Select Quiz Options{% endblock %}
 
+{% block extra_css %}
+<style>
+    #startQuizBtn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
     <!-- Breadcrumb -->
@@ -163,13 +172,38 @@
         questionInputs.forEach(input => input.addEventListener('change', updateTimeEstimate));
 
         updateTimeEstimate();
+    });
 
-        // Form submission
-        document.getElementById('quizConfigForm').addEventListener('submit', function (e) {
-            const btn = document.getElementById('startQuizBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating Quiz...';
-        });
+    // Task 3.6: Simple loading indicator in button
+    // Reset button state immediately on page load
+    const startBtn = document.getElementById('startQuizBtn');
+    if (startBtn) {
+        startBtn.disabled = false;
+        startBtn.innerHTML = '<i class="bi bi-play-circle"></i> Start Quiz';
+    }
+    
+    // Reset on pageshow (handles back button)
+    window.addEventListener('pageshow', function(event) {
+        const btn = document.getElementById('startQuizBtn');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-play-circle"></i> Start Quiz';
+        }
+    });
+    
+    // Handle form submission
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('quizConfigForm');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                const btn = document.getElementById('startQuizBtn');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating Quiz...';
+                }
+            });
+        }
     });
 </script>
+
 {% endblock %}
