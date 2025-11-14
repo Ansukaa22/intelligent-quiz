@@ -2,6 +2,12 @@
 Django>=4.2,<5.0
 django-environ>=0.11.0
 
+# Static files (WhiteNoise for production)
+whitenoise>=6.0.0
+
+# Production server
+gunicorn>=21.0.0
+
 # Database (Optional - only needed for PostgreSQL)
 # psycopg2-binary>=2.9.0
 
